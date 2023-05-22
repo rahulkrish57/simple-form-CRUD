@@ -1,0 +1,13 @@
+.form-input-area {
+  background-color: rgb(183, 241, 241);
+  border-radius: 5px;
+}
+.custom-alert {
+  width: 50%;
+  /* margin: 0 auto; */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+}

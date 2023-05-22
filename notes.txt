@@ -1,0 +1,20 @@
+Props
+        short form of Properties
+        syntax
+
+        parent component: 
+        <ParentComponent propName={value} propName1={value or Value2} ... />
+
+        child component: 
+        const childComponent = (props) => {
+            console.log(props) // contains all props
+            return (
+                <></>
+            )
+        }
+
+        Prop Drilling: Sending data as properties to another child component from a parent component even if the parent component doesnt need data
+
+Hooks
+    1. useState 
+        
