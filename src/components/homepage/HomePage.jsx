@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Container,
   Row,
@@ -10,14 +11,13 @@ import {
 } from "react-bootstrap";
 import { BiEdit } from "react-icons/bi";
 import { MdDeleteForever } from "react-icons/md";
-import { userData } from "../../dummy/dummyData";
 const HomePage = (props) => {
   //
   const initialState = {
     fName: "",
     lName: "",
     email: "",
-    gender: "",
+    date: "",
   };
   const [newPage, setNewPage] = useState(true);
   console.log("newPage", newPage);
@@ -29,11 +29,29 @@ const HomePage = (props) => {
   console.log("newInput", newInput);
   const [editInput, setEditInput] = useState(null);
   console.log("editInput", editInput);
-  const [tableRecord, setTableRecord] = useState(userData);
+  const [tableRecord, setTableRecord] = useState([]);
   console.log("tableRecord", tableRecord);
   // alert
   const [alert, setAlert] = useState(false);
   console.log("alert", alert);
+
+  // function to get data
+  const getData = async () => {
+    try {
+      const data1 = await axios.get(
+        `https://61f92a85783c1d0017c449c4.mockapi.io/users`
+      );
+      const { data } = data1;
+      setTableRecord(data);
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+
+  useEffect(() => {
+    getData();
+    console.log("use effect")
+  }, []);
 
   // handle new form input function
 
@@ -57,31 +75,52 @@ const HomePage = (props) => {
   // add new Data Function
   const addNewData = () => {
     // logic for check all fields are filled
-    const { fName, lName, email, gender } = newInput;
-    if (fName !== "" && lName !== "" && email !== "" && gender !== "") {
+    const { fName, lName, email, date } = newInput;
+    if (fName !== "" && lName !== "" && email !== "" && date !== "") {
       const newData = [...tableRecord];
       newData.push(newInput);
       setTableRecord(newData);
       setNewInput(initialState);
       setAlert(false);
+      postData(newData);
     } else {
       setAlert(true);
     }
   };
-
+  const postData = async (newData) => {
+    const body = newInput;
+    const data = await axios.post(
+      `https://61f92a85783c1d0017c449c4.mockapi.io/users`,
+      body
+    );
+    console.log("post-data", data);
+  };
   // update the data function
   const addEditData = () => {
     // logic for check all fields are filled
-    const { fName, lName, email, gender } = editInput;
-    if (fName !== "" && lName !== "" && email !== "" && gender !== "") {
+    const { fName, lName, email, date, id } = editInput;
+    if (fName !== "" && lName !== "" && email !== "" && date !== "") {
       const newData = [...tableRecord];
       newData[editIndex] = editInput;
       setTableRecord(newData);
       setAlert(false);
       cancelEdit();
+      editData(id);
       // remaining
     } else {
       setAlert(true);
+    }
+  };
+  // edit data to server
+  const editData = async (id) => {
+    try {
+      const body = editInput;
+      const result = await axios.put(
+        `https://61f92a85783c1d0017c449c4.mockapi.io/users/${id}`,
+        body
+      );
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -111,10 +150,21 @@ const HomePage = (props) => {
   };
 
   // delete data from table
-  const deleteData = (index) => {
+  const deleteData = (index, id) => {
     const data = [...tableRecord];
     data.splice(index, 1);
     setTableRecord(data);
+    delData(id);
+  };
+  // function to delete all records
+  const delData = async (id) => {
+    try {
+      await axios.delete(
+        `https://61f92a85783c1d0017c449c4.mockapi.io/users/${id}`
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
   return (
     <>
@@ -183,20 +233,15 @@ const HomePage = (props) => {
                 </Col>
                 <Col xs={12} md={12}>
                   <Form.Group className="mb-3" controlId="formBasicGender">
-                    <Form.Label>Gender</Form.Label>
-                    <select
-                      name="gender"
-                      className="form-select"
-                      value={newInput?.gender}
+                    <Form.Label>Date of Birth</Form.Label>
+                    <Form.Control
+                      type="date"
+                      name="date"
+                      placeholder="Select Date"
                       onChange={handleInput}
-                    >
-                      <option value="">--select--</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
-                    <Form.Text className="text-muted">
-                      Enter Your Gender
-                    </Form.Text>
+                      value={newInput?.date}
+                    />
+                    <Form.Text className="text-muted">Enter Date</Form.Text>
                   </Form.Group>
                 </Col>
                 <Col xs={12} className="text-center">
@@ -264,20 +309,15 @@ const HomePage = (props) => {
                 </Col>
                 <Col xs={12} md={12}>
                   <Form.Group className="mb-3" controlId="formBasicGender">
-                    <Form.Label>Gender</Form.Label>
-                    <select
-                      name="gender"
-                      className="form-select"
-                      value={editInput?.gender}
+                    <Form.Label>Date of Birth</Form.Label>
+                    <Form.Control
+                      type="date"
+                      name="date"
+                      placeholder="Select Date"
                       onChange={handleEdit}
-                    >
-                      <option value="">--select--</option>
-                      <option value="Male">Male</option>
-                      <option value="Female">Female</option>
-                    </select>
-                    <Form.Text className="text-muted">
-                      Enter Your Gender
-                    </Form.Text>
+                      value={editInput?.date}
+                    />
+                    <Form.Text className="text-muted">Enter Date</Form.Text>
                   </Form.Group>
                 </Col>
                 <Col xs={12} className="text-center">
@@ -308,36 +348,38 @@ const HomePage = (props) => {
                   <th>First Name</th>
                   <th>Last Name</th>
                   <th>Email</th>
-                  <th>Gender</th>
+                  <th>Date of Birth</th>
                   <th></th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {tableRecord?.length > 0 &&
-                  tableRecord.map(({ fName, lName, email, gender }, index) => {
-                    return (
-                      <tr key={index}>
-                        <td>{index + 1}</td>
-                        <td>{fName}</td>
-                        <td>{lName}</td>
-                        <td>{email}</td>
-                        <td>{gender}</td>
-                        <td
-                          onClick={() => editTrigger(index)}
-                          className="cursor-pointer"
-                        >
-                          <BiEdit />
-                        </td>
-                        <td
-                          className="cursor-pointer"
-                          onClick={() => deleteData(index)}
-                        >
-                          <MdDeleteForever />
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  tableRecord.map(
+                    ({ fName, lName, email, date, id }, index) => {
+                      return (
+                        <tr key={index}>
+                          <td>{index + 1}</td>
+                          <td>{fName}</td>
+                          <td>{lName}</td>
+                          <td>{email}</td>
+                          <td>{date}</td>
+                          <td
+                            onClick={() => editTrigger(index)}
+                            className="cursor-pointer"
+                          >
+                            <BiEdit />
+                          </td>
+                          <td
+                            className="cursor-pointer"
+                            onClick={() => deleteData(index, id)}
+                          >
+                            <MdDeleteForever />
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
               </tbody>
             </Table>
           </Row>
