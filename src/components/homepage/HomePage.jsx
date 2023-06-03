@@ -50,7 +50,6 @@ const HomePage = (props) => {
 
   useEffect(() => {
     getData();
-    console.log("use effect")
   }, []);
 
   // handle new form input function
